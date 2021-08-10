@@ -1,0 +1,924 @@
+---
+title: "part 4 Data Manipulation in R"
+author: "Ilir_Sheraj"
+date: "7/15/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Packages:
+
+{tidyverse}
+
+{magrittr}: Offers pipe operator (%>%) for more readable code
+
+{dplyr}
+
+{tidyr}: Helps you create tidy data
+
+{stringr}: Provide functions for working with strings
+
+{rvest}: Web scrapping
+
+{jsonlite}: JSON parser and generator
+
+**Tidy Data**: Describes a standard way of storing data that is used wherever possible in tidyverse
+
+1 - Every Column is a variable
+
+2 - Every row is an observation
+
+3 - Every cell is a single value
+
+The **dplyr** main verbs (functions)
+
+select(): Pick variables based on their names
+
+filter(): Pick cases based on their values
+
+mutate(): Add new variables as functions of existing ones
+
+arrange(): change the ordering of the rows
+
+summarize(): Reduce multiple values to a single summary
+
+**stringr** verbs
+
+str_detect(x, patterns): Tells you if theres is any match with the pattern
+
+str_count()(x, pattern): Counts the number of patterns
+
+str_subset(x, pattern): Extracts the matching components
+
+str_locate(x, pattern): GIves the position of the match
+
+str_extract(x, pattern): Exttracts the text of the match
+
+str_replace(x, pattern, replacement): Replaces matches with new text
+
+str_split(x, pattern): SPlits up a string into multiple pieces
+
+str_to_lower(), str_to_upper(), str_to_title()
+
+str_pad(): adds spaces to the beginning or end
+
+str_trim(), str_squish()
+
+str_length()
+
+**rvest** package for web scrapping
+
+Designed to work with magrittr
+
+Makes it easy to express common webscrapping tasks
+
+Inspired by libraries like *beautiful soup*
+
+**jronlite** package optimized for the web
+
+It can convert between R objects and JSON without loss of type or information
+
+It is ideal for interacting with web APIs
+
+Key functions: fromJSON() and toJSON()
+
+# The Pipe Operator
+
+```{r}
+library(magrittr)
+```
+
+To add the pipe operator press ctrl+shift+m. THis is fucking cool!
+
+```{r}
+1:10 %>% mean()
+```
+
+Make it sexier according to convention
+
+```{r}
+1:10 %>% 
+  mean()
+```
+
+```{r}
+1:10 %>% 
+  mean() %>% 
+  round(digits = 0)
+```
+
+```{r}
+1:10 %>% 
+  mean() %>% 
+  floor()
+```
+
+```{r}
+1:10 %>% 
+  mean() %>% 
+  floor() %>% 
+  print()
+```
+
+```{r}
+paste("Hello", "World")
+```
+
+```{r}
+"Hello" %>% 
+  paste("World")
+```
+
+# Dplyr: The **filter** Verb
+
+```{r}
+library(dplyr)
+```
+
+```{r}
+starwars
+```
+
+```{r}
+colnames(starwars)
+```
+
+```{r}
+dim(starwars)
+```
+
+```{r}
+# Data Frame
+starwars["eye_color"]
+```
+
+```{r}
+# Vector
+starwars[["eye_color"]]
+```
+
+```{r}
+class(starwars["eye_color"])
+```
+
+```{r}
+starwars["eye_color"] %>% 
+  class()
+```
+
+
+```{r}
+starwars %>% 
+  select(eye_color) %>% 
+  unique()
+```
+
+```{r}
+# Another Way
+starwars$eye_color %>% unique()
+```
+
+```{r}
+starwars %>% 
+  filter(eye_color == "black")
+```
+
+```{r}
+starwars %>% 
+  filter(eye_color != "black" & skin_color == "gold")
+```
+
+```{r}
+starwars %>% 
+  filter(eye_color != "black",
+         skin_color == "gold",
+         height > 100)
+```
+
+```{r}
+starwars %>% 
+  filter(eye_color != "black") %>%
+#  filter(skin_color == "gold") %>% 
+  filter(height > 100)
+```
+
+Dplyr: The **select** Verb
+
+```{r}
+which(colnames(starwars) == "height")
+```
+
+```{r}
+starwars %>% 
+  select(2:7)
+```
+
+```{r}
+starwars %>% 
+  select(c(2,3,4,5,6,7))
+```
+
+```{r}
+which(colnames(starwars) == "hair_color")
+```
+
+```{r}
+starwars %>% 
+  select(c(2,3,5,6,7))
+```
+
+```{r}
+starwars %>% 
+  select(c(7,2,3,5,6))
+```
+
+```{r}
+# Do the same without the need to supply a vector
+starwars %>% 
+  select(7,2,3,5,6)
+```
+
+In console, write a function and press ctrl + up arrow to see the history of all commands you've written before
+
+```{r}
+# No need for index numbers even
+# This time we can create a range
+starwars %>% 
+  select(which(colnames(starwars) == "height"):which(colnames(starwars)== "birth_year"))
+```
+
+```{r}
+# Do the same by replacing the variable with full stop
+starwars %>% 
+  select(which(colnames(.) == "height"):which(colnames(.)== "birth_year"))
+```
+
+```{r}
+# Again same results
+starwars %>% 
+  select(height:birth_year)
+```
+
+```{r}
+# Remove hair color from the range
+starwars %>% 
+  select(height:birth_year, -hair_color)
+```
+
+everything function within select
+
+```{r}
+starwars %>% 
+  select(everything())
+```
+
+```{r}
+temp <- starwars %>% 
+  select(everything())
+```
+
+
+```{r}
+library(waldo)
+waldo::compare(starwars, temp)
+```
+
+```{r}
+starwars2 <- starwars %>% 
+  select(height:birth_year)
+waldo::compare(starwars, starwars2)
+```
+
+```{r}
+# First pick height to birth, and then everything afterwards
+starwars %>% 
+  select(height:birth_year, everything())
+```
+
+start_with(), end_with(), contains()
+
+```{r}
+starwars %>% 
+  select(ends_with("color"))
+```
+
+```{r}
+iris %>% 
+  select(Species, starts_with("petal"))
+```
+
+```{r}
+starwars %>% 
+  select(where(is.integer))
+```
+
+```{r}
+starwars %>% 
+  select(where(is.character))
+```
+
+```{r}
+iris %>% 
+  select(ends_with("width"))
+```
+
+```{r}
+iris %>% 
+  select(!ends_with("width"))
+```
+
+```{r}
+iris %>% 
+  select(starts_with("petal") | ends_with("width"))
+```
+
+```{r}
+starwars %>% 
+  select(!c(height, birth_year))
+```
+
+# Dplyr: **mutate** Verb
+
+```{r}
+library(dplyr)
+starwars
+```
+
+```{r}
+starwars %>% 
+  mutate(bmi = mass/(height/100)^2) %>% 
+  select(name, height, mass, bmi) %>% 
+  mutate(bmi = round(bmi,2))
+```
+
+```{r}
+# even easier and neater
+starwars %>% 
+  mutate(bmi = mass/((height/100)^2), bmi = round(bmi,2)) %>% 
+  select(name, height, mass, bmi)
+```
+
+```{r}
+# Temporary columns creation
+iris %>%
+  select(Species, starts_with("petal")) %>% 
+  mutate(Petal.Area = Petal.Length * Petal.Width) %>% 
+  filter(Petal.Area > 4 & Petal.Area < 6) %>% 
+  select(-Petal.Area)
+```
+
+```{r}
+starwars %>% 
+  select(name, mass) %>% 
+  mutate(mass2 = mass*2, mass2_squared = mass2*mass2)
+```
+
+```{r}
+# Modify multiple columns at once
+starwars %>% 
+  select(name, homeworld, species) %>% 
+  mutate(homeworld = as.factor(homeworld), 
+         species = as.factor(species))
+```
+
+```{r}
+# Make it shorter
+starwars %>% 
+  select(name, homeworld, species) %>% 
+  mutate(across(c(homeworld, species), as.factor))
+```
+
+```{r}
+# Same, even neater
+starwars %>% 
+  select(name, homeworld, species) %>% 
+  mutate(across(!name, as.factor))
+```
+
+# Dplyr: **arrange** Verb
+
+Order rows in ascending/descending criteria
+
+```{r}
+# default is ascending. For descending put a - before the column name
+starwars %>% 
+  arrange(height)
+```
+
+```{r}
+starwars %>% 
+  arrange(desc(height))
+```
+
+Nested arrangements
+
+```{r}
+mtcars %>% 
+  arrange(cyl, disp)
+```
+
+```{r}
+iris %>% 
+  arrange(Sepal.Length, Sepal.Width)
+```
+
+```{r}
+iris %>% 
+  arrange(across())
+```
+
+# Dplyr: **summarize** Verb
+
+```{r}
+mtcars %>% 
+  summarize(mean = mean(disp))
+```
+
+```{r}
+# Summarize with numbe rof rows being summarized
+mtcars %>% 
+  summarize(mean = mean(disp), n = n())
+```
+
+```{r}
+mtcars %>% 
+  group_by(cyl) %>% 
+  summarize(mean = mean(disp), n = n())
+```
+
+```{r}
+mtcars %>% 
+  group_by(carb) %>% 
+  summarize(mean = mean(disp), n = n())
+```
+
+```{r}
+starwars %>% 
+  group_by(species) %>% 
+  summarize(count = n(),
+            mean_mass = mean(mass, na.rm = TRUE)
+            ) %>% 
+  filter(count >1, mean_mass > 50) %>% 
+  arrange(desc(count))
+```
+
+# Dplyr: **tidyr** Verb for Data Pivoting
+
+```{r}
+library(tidyr)
+```
+
+pivot_longer()
+
+pivot_wider()
+
+Converts a dataset from long to wide, and from wide to long format
+
+```{r}
+messy_data <- tibble::tribble(
+  ~Student, ~Quiz1, ~Quiz2, ~Test1,
+  #-----/-----/--------/-----------/
+  "Peter", "F", NA, NA,
+  "Bob", "B", "C", "B",
+  "John", "A", "A", "B"
+)
+messy_data
+```
+
+This is a wide data format and we wanna convert it into long format
+
+```{r}
+pivot_longer(messy_data, c(Quiz1, Quiz2, Test1))
+```
+
+```{r}
+# Same
+tidy_data <- pivot_longer(messy_data, -Student, 
+                          names_to = "Assessment", values_to = "Grade")
+tidy_data
+```
+
+```{r}
+messy_data2 <- pivot_wider(tidy_data, 
+                           names_from = Assessment, values_from = Grade)
+messy_data2
+```
+
+```{r}
+waldo::compare(messy_data, messy_data2)
+```
+
+```{r}
+# Funny dataset in tidyr
+relig_income
+```
+
+Collapse all these into two coulmns: Income range vs counts
+
+```{r}
+pivot_longer(relig_income, -religion, names_to = "income", values_to = "count")
+```
+
+```{r}
+billboard
+```
+
+```{r}
+billboard_longer <- billboard %>% 
+  pivot_longer(cols = starts_with("wk"),
+               names_to = "week",
+               values_to = "rank")
+billboard_longer
+```
+
+```{r}
+billboard_longer %>% 
+  filter(artist == "2 Pac")
+```
+
+```{r}
+billboard_longer <- billboard %>% 
+  pivot_longer(cols = starts_with("wk"),
+               names_to = "week",
+               values_to = "rank", 
+               values_drop_na = TRUE)
+billboard_longer
+```
+
+```{r}
+billboard_longer %>% 
+  filter(artist == "2 Pac")
+```
+
+
+```{r}
+billboard_longer %>% 
+  group_by(track) %>% 
+  summarize(highest_rank = min(rank), week = week) %>% 
+  arrange(highest_rank)
+```
+
+# String Manipulation
+
+```{r}
+library(stringr)
+```
+
+```{r}
+pivot_longer(billboard, 
+             starts_with("wk"), 
+             names_to = "week", 
+             values_to = "rank",
+             values_drop_na = TRUE)
+```
+
+We wanna split week column and remove the character part
+
+```{r}
+x <- c("why", "video", "cross", "extra", "deal", "authority")
+# measure the length of each string in the string vector
+str_length(x)
+```
+
+```{r}
+str_sub("Hello", 1, 2)
+```
+
+```{r}
+str_sub("Hello", 1, 4)
+```
+
+```{r}
+str_sub("Hello", 3, 4)
+```
+
+```{r}
+# applies to each string in the vector
+str_sub(x, 1, 2)
+```
+
+```{r}
+pivot_longer(billboard, 
+             starts_with("wk"), 
+             names_to = "week", 
+             values_to = "rank",
+             values_drop_na = TRUE) %>% 
+  mutate(week = as.integer(str_sub(week, 3, 4)))
+```
+
+```{r}
+# Same thing done differently
+pivot_longer(billboard, 
+             starts_with("wk"), 
+             names_to = "week", 
+             values_to = "rank",
+             values_drop_na = TRUE) %>% 
+  mutate(week = str_sub(week, 3, 4)) %>% 
+  mutate(week = as.integer(week))
+```
+
+```{r}
+# Find a pattern
+str_detect(x, "a")
+```
+
+Check the cheatsheet in stringr package from tidyverse
+
+```{r}
+# start with
+str_detect("Hello World", "^H")
+```
+
+```{r}
+# end with
+str_detect("Hello World", "d$")
+```
+
+```{r}
+str_extract(x, "ss")
+```
+
+```{r}
+str_extract(x, "[:alpha:]ss")
+```
+
+```{r}
+str_extract(x, "[:alpha:]*ss")
+```
+
+```{r}
+# it picks only the first occurence
+string <- "Hello World! Hell yeah!"
+str_extract(string, "ll")
+```
+
+```{r}
+str_extract_all(string, "ll")
+```
+
+```{r}
+# replaces only the first
+str_replace(string, "ll", "x")
+```
+
+```{r}
+#replaces all
+str_replace_all(string, "ll", "x")
+```
+
+```{r}
+str_split("this, is, a, list", ",") %>% 
+  unlist() %>% 
+  str_trim()
+```
+
+```{r}
+str_split("this, is, a, list", ",") %>% 
+  unlist() %>% 
+  str_squish()
+```
+
+```{r}
+# adds spaces to reach the length given in the function
+str_pad("Hello", 10)
+```
+
+```{r}
+str_pad("Hello", 10, side = "right")
+```
+
+```{r}
+str_pad("Hello", 10, side = "both")
+```
+
+```{r}
+str_pad("Hello", 10, side = "both", pad = "-")
+```
+
+# Web Scraping: **rvest**
+
+```{r}
+library(rvest)
+```
+
+https://www.imdb.com/chart/top/
+
+html tags (ex: <html>, <body>, <div>)
+  <html></html>
+  <body></body>
+  
+attributes
+  <div id = "" class=:"" styles=""><div/>
+  
+```{r}
+url <- "https://www.imdb.com/chart/top/"
+
+top_movies <- read_html(url)
+```
+
+```{r}
+top_movies %>% 
+  html_nodes("div")
+```
+
+```{r}
+top_movies %>% 
+  html_nodes("div a")
+```
+
+```{r}
+top_movies %>% 
+  html_nodes("tbody tr")
+```
+
+```{r}
+top_movies %>% 
+  html_nodes("tbody tr td.titleColumn")
+```
+
+Extract the text within them
+
+```{r}
+titles <- top_movies %>% 
+  html_nodes("tbody tr td.titleColumn") %>% 
+  html_text()
+#titles
+```
+
+Clean the stuff up
+
+```{r}
+# str_split(titles, "\n")
+```
+
+```{r}
+titles <- titles %>% 
+  str_trim() %>% 
+  str_split("\n")
+```
+
+
+```{r}
+# lapply(titles, function(movie){
+#    print(movie)
+# })
+```
+
+```{r}
+lapply(titles, function(movie){
+  movie[2]
+}) %>%
+  str_trim() %>% 
+  unlist()
+```
+
+```{r}
+# merge everything together
+titles <- top_movies %>% 
+  html_nodes("tbody tr td.titleColumn") %>% 
+  html_text() %>% 
+  str_trim() %>% 
+  str_split("\n") %>% 
+  lapply(function(movie) {
+    movie[2]
+  }) %>% 
+  unlist() %>% 
+  str_trim()
+```
+
+Extract years 
+
+```{r}
+years <- top_movies %>% 
+  html_nodes("tbody tr td.titleColumn") %>% 
+  html_text() %>% 
+  str_trim() %>% 
+  str_split("\n") %>% 
+  lapply(function(movie) {
+    movie[3]
+  }) %>% 
+  unlist() %>% 
+  str_trim() %>% 
+  str_replace("\\(", "") %>% 
+  str_replace("\\)", "") %>% 
+  as.integer()
+```
+
+Create Ranks
+
+```{r}
+ranks <- 1:250
+```
+
+```{r}
+ratings <- top_movies %>% 
+  html_nodes(".imdbRating strong") %>% 
+  html_text() %>% 
+  as.numeric()
+```
+
+Create a dataframe with everything
+
+```{r}
+top_movies_tibble <- tibble(
+  Rank = ranks,
+  Title = titles,
+  Year = years,
+  Rating = ratings
+  )
+top_movies_tibble %>% head()
+```
+
+```{r}
+top_movies_tibble %>% 
+  arrange(desc(Year)) %>% 
+  head()
+```
+
+```{r}
+top_movies_tibble %>% 
+  group_by(Year) %>% 
+  summarize(Average_Rating = mean(Rating)) %>% 
+  arrange(desc(Average_Rating))
+```
+
+Extract director names by extracting the link of each movie
+
+```{r}
+links <- top_movies %>%
+  html_nodes("tbody tr td.titleColumn a") %>% 
+  html_attr("href") %>% 
+  paste0("https://www.imdb.com", .)
+links[1]
+```
+
+```{r}
+links[1] %>% 
+  read_html() %>% 
+  html_nodes("div.credit_summary_item a") %>% 
+  html_text()
+```
+
+```{r}
+lapply(links[1:10], function(link){
+  link %>% 
+    read_html() %>% 
+    html_node("div.credit_summary_item a") %>% 
+    html_text()
+}) %>% unlist()
+```
+
+# JSON Parsing
+
+```{r}
+library(jsonlite)
+```
+
+```{r}
+mtcars_json <- mtcars %>% 
+  toJSON()
+```
+
+```{r}
+fromJSON(mtcars_json)
+```
+
+```{r}
+all_equal(mtcars, fromJSON(mtcars_json))
+```
+
+```{r}
+json <- '["Mario", "Peach", null, "Browser"]'
+fromJSON(json)
+```
+
+```{r}
+fromJSON(json, simplifyVector = FALSE)
+```
+
+```{r}
+json <- '[
+{"Name" : "Mario", "Age": 31, "Occupation" : "Plumber"},
+{"Name" : "Peach", "Age": 21, "Occupation" : "Princess"},
+{},
+{"Name" : "Browser", "Occupation" : "Koopa"}
+]'
+fromJSON(json)
+```
+
+```{r}
+my_df <- fromJSON(json)
+my_df$ranking <- c(3,1,2,4)
+my_df
+```
+
+```{r}
+toJSON(my_df)
+```
+
+```{r}
+toJSON(my_df, pretty = TRUE)
+```

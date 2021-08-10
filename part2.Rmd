@@ -1,0 +1,752 @@
+---
+title: "Vectors Part 2"
+output: html_notebook
+---
+
+In order to both save something into the global environment and run it at the same time, asign it a name and put it in paranthesis as shown in the chunk below
+
+```{r}
+(x <- 1:10)
+```
+
+Add new chunk with ctrl+alt+i
+Check documentation ?seq
+```{r}
+seq(from = 1, to = 10)
+```
+
+```{r}
+seq(from = 1, to = 10, by = 2)
+```
+
+```{r}
+seq(from = 1, to = 100, by = 3)
+```
+
+To directly run an example from documentation, highlight it on R and press ctrl + enter. It will be directly sent into the console
+
+```{r}
+x
+```
+
+Element-wise Operations on vectors
+```{r}
+x + 5
+```
+
+```{r}
+(y <- 11:20)
+```
+
+Element-wise addition of vectors
+```{r}
+x + y
+```
+
+Vectors of different lengths
+```{r}
+test <- 2:10
+length(test)
+```
+
+All elements were added together unttill the minimum length was reached. Afterwards recycling happens
+```{r}
+test + y
+```
+
+Subsetting vectors
+```{r}
+y_new <- y[1:9]
+length(y_new)
+```
+
+```{r}
+test + y_new
+```
+
+```{r}
+test*y
+```
+
+```{r}
+test/y
+```
+
+# Vectors Missing Values
+
+They are represented by NA in R. Pull out documentation on NA by ?NA
+
+```{r}
+x <- c(0.5, NA, 0.7)
+```
+
+```{r}
+x <- c(TRUE, FALSE, NA)
+```
+
+```{r}
+x <- c("a", NA, "c", "d", "e")
+```
+
+Testing the presence of missing values
+
+```{r}
+is.na(x)
+```
+
+```{r}
+is.na(NA)
+```
+
+```{r}
+is.na(0)
+```
+
+Check whether there is any NA in the vector
+
+```{r}
+anyNA(x)
+```
+
+# Vector Coercion
+
+When you explicitly or R implicitly converts a value of one type into a value of a different type if it is convertible.
+
+In the following case, the integer will be coerced into a string since "a" cannot be converted into a number
+```{r}
+xx <- c(1.7, "a")
+xx
+```
+
+TRUE has a value of 1, so it will be coerced into a number
+```{r}
+xx <- c(TRUE, 2)
+xx
+```
+
+Now TRUE will be coerced into character since "a" cannot be coerced into any other data type
+```{r}
+xx <- c("a", TRUE)
+xx
+```
+
+```{r}
+as.character(1.7)
+```
+
+```{r}
+as.integer("1.7")
+```
+
+```{r}
+as.numeric("1.7")
+```
+
+```{r}
+as.numeric(TRUE)
+```
+
+```{r}
+xx <- c(as.character(1.7), "a")
+xx
+```
+
+```{r}
+as.logical("a")
+```
+
+```{r}
+as.logical(2)
+```
+
+```{r}
+as.logical(-1)
+```
+
+Any number other than zero is converted into TRUE
+
+# Naming Vectors
+
+```{r}
+x <- 1:3
+x
+print(x)
+length(x)
+anyNA(x)
+```
+
+```{r}
+names(x)
+```
+
+```{r}
+letters
+```
+
+```{r}
+LETTERS
+```
+
+```{r}
+LETTERS[1:10]
+```
+
+Create a named vector. A, B and C are not elements of the vector, and this is not a matrix. They ae just names associated with the elements of vector x
+```{r}
+names(x) <- LETTERS[1:3]
+x
+```
+
+WHen the vector has names, when we ask for names, we get another vector with the names
+```{r}
+names(x)
+```
+
+```{r}
+names(x) <- letters[1:3]
+x
+```
+
+```{r}
+names(x)
+```
+
+Assign names to each element of the vector while creating it
+```{r}
+a <- c("d"=4, "e"=5, "f"=6)
+a
+```
+
+```{r}
+names(a) <- c("A", "B", "C")
+a
+```
+
+# Miscelaneous COncepts of Vectors
+
+Extending the esxisting vector
+
+```{r}
+x <- c(1,2,3)
+```
+
+```{r}
+c(x, 4,5,6)
+```
+
+```{r}
+y <- 4:6
+```
+
+```{r}
+z <- c(x,y)
+z
+```
+
+```{r}
+c(0, z)
+```
+
+```{r}
+mean(z)
+```
+
+```{r}
+sum(z)
+```
+
+```{r}
+min(z)
+```
+
+```{r}
+max(z)
+```
+
+# Working With Matrices
+
+Matrices are a very important topic for Machine Learning, especially for research purposes and engineering
+
+There are many ways to create matrices
+
+```{r}
+m <- matrix(data = c(1,2,3,11,12,13), nrow = 2, ncol = 3, byrow = TRUE)
+m
+```
+
+```{r}
+m <- matrix(data = c(1,2,3,11,12,13), nrow = 2, ncol = 3, byrow = FALSE)
+m
+```
+
+Do the same thing by reshuffling the vector values
+
+```{r}
+matrix(data = c(1,11,2,12,3,13), nrow = 2, ncol = 3) -> m
+m
+```
+
+The result of dim() is a vector in itself
+```{r}
+dim(m)
+```
+
+```{r}
+dim(m) <- c(3,2)
+m
+```
+
+```{r}
+dim(m) <- c(6,1)
+m
+```
+
+Another way to create a matrix
+
+```{r}
+m <- 1:10
+dim(m)
+```
+
+```{r}
+dim(m) <- c(2,5)
+m
+```
+
+```{r}
+dim(m) <- c(5,2)
+m
+```
+
+```{r}
+dim(m) <- c(4,2)
+```
+
+Using cbind() and rbind() functions
+
+```{r}
+x <- 1:3
+y <- 10:12
+```
+
+```{r}
+cbind(x,y)
+```
+
+```{r}
+m <- rbind(x,y)
+m
+```
+
+```{r}
+names(m)
+```
+
+Matrices can have two sets of names, rows and columns
+```{r}
+colnames(m)
+```
+
+```{r}
+rownames(m)
+```
+
+```{r}
+colnames(m) <- c("a", "b", "c")
+m
+```
+
+```{r}
+colnames(m) <- NULL
+rownames(m) <- NULL
+m
+```
+
+Matrix slicing
+```{r}
+m[2,2]
+```
+
+```{r}
+m[1:2,2:3]
+```
+
+```{r}
+m[1:2,3]
+```
+
+```{r}
+m[2,]
+```
+
+```{r}
+m[,2]
+```
+
+# Lists
+
+Lists are very fundamental to R and they are like dictionaries in Python. The main advantage is the fact that you can store more than one data type within the same object. This is very useful for functions since they return only one object. Using lists we can again get one object but with many data types.
+
+```{r}
+list(1, "a", TRUE)
+```
+
+We are supplying the list function with a number of vectors as shown below. Thus they can be extended easily. We create a data structure that has no specific dimensions or data type
+
+```{r}
+list(c(1), c("a"), c(TRUE))
+```
+
+```{r}
+list(c(1,2), c("a"), c(TRUE))
+```
+
+We can even add a list within a list
+
+```{r}
+list(1, "a", TRUE, list(c(1,2)), c("a"), c(TRUE))
+```
+
+```{r}
+x <- vector(mode = "list", length = 5)
+length(x)
+```
+
+```{r}
+x <- list(1, "a", TRUE)
+x
+```
+
+Single brackets return a list
+```{r}
+x[2]
+```
+
+To get a specific element of the list in vector form
+
+```{r}
+x[[2]]
+```
+
+```{r}
+class(x[[2]])
+```
+
+```{r}
+class(x[2])
+```
+
+```{r}
+class(x[[1]])
+```
+
+```{r}
+class(x[[3]])
+```
+
+R provides us with a very nice set of functions known as the "apply" family, especially useful in functional programming and also very useful for lists. Generally we use a for loop to iterate through the elements of the lists.
+lapply function for list apply
+
+```{r}
+lapply(x, class)
+```
+
+```{r}
+types_x <- lapply(x, class)
+```
+
+```{r}
+index <- 2
+x[[index]]
+```
+
+```{r}
+types_x[index]
+```
+
+```{r}
+as.list(1:10)
+```
+
+```{r}
+xlist <- list(a = "John Stevens", b = 1:10, data = head(iris))
+xlist
+```
+
+```{r}
+xlist$a
+```
+
+```{r}
+xlist$b
+```
+
+```{r}
+xlist$data
+```
+
+```{r}
+str(xlist)
+```
+
+```{r}
+xlist[["a"]]
+```
+
+```{r}
+xlist[["data"]]
+```
+
+# Introduction to Data Frames
+
+Data Frames are absolutely crucial to ML in R. Numpy in python was inspired by R's data frame. They are a collection of columns of data, each column being a vector, therefore each column is of one type of data structure.
+
+R has multiple built-in datasets which you can use to experiment without the need to create your own dataset or import from some other package
+
+```{r}
+iris
+```
+
+Data frames are actually lists, but what defines a dataframe is that each object within the dataframe is of the same length.
+
+```{r}
+iris_data <- iris
+```
+
+Each row is called an observation and each column is called a variable
+
+```{r}
+str(iris_data)
+```
+
+data() function gives a list of all the data sets built into R
+
+# Creating Data Frames
+
+```{r}
+mtcars
+```
+
+```{r}
+dim(mtcars)
+```
+
+```{r}
+data <- data.frame(Name = c("John", "Bob"), 
+           Age = c(35, 40), 
+           Hair = c("Brown", "Dark"), 
+           Married = c(TRUE, FALSE)
+           )
+data
+```
+
+```{r}
+data$Name
+```
+
+```{r}
+data$Name
+```
+
+```{r}
+data[,1]
+```
+
+```{r}
+data[[1]]
+```
+
+Return a data frame
+```{r}
+class(data[2])
+```
+
+Return a Vector
+```{r}
+class(data[[2]])
+```
+
+```{r}
+data[c(1,3)]
+```
+
+Row referencing
+```{r}
+data[2,]
+```
+
+```{r}
+data[2,3]
+```
+
+```{r}
+data[c(1,2), c(2,4)]
+```
+
+# Helper Functions for Data Frames
+
+```{r}
+df <- data.frame(id = letters[1:10],
+                 x = 1:10,
+                 y = 11:20)
+df
+```
+
+```{r}
+head(df, 3)
+```
+
+```{r}
+tail(df, 3)
+```
+
+```{r}
+View(df)
+```
+
+```{r}
+dim(df)
+```
+
+```{r}
+nrow(df)
+```
+
+```{r}
+ncol(df)
+```
+
+```{r}
+str(df)
+```
+
+```{r}
+str(iris)
+```
+
+```{r}
+str(mtcars)
+```
+
+```{r}
+names(df)
+```
+
+```{r}
+rownames(df)
+```
+
+```{r}
+colnames(df)
+```
+
+```{r}
+rownames(df) <- NULL
+rownames(df)
+```
+
+```{r}
+rownames(df) <- letters[1:10]
+df
+```
+
+Looping through columns in the data frame with sapply() function
+
+```{r}
+sapply(df, class)
+```
+
+```{r}
+summary(df)
+```
+
+# Data Frames - Tibbles
+
+Tibbles are simple data frame format that build upon the conventional data frames but fix some of the problems and add other characteristics, enhancing them. All packages in tidyverse use tibbles.
+
+```{r}
+library(tibble)
+```
+
+Native R uses dot notation to name function, while tidyverse prefers to use underscore in functions.
+
+```{r}
+tb <- as_tibble(iris)
+tb
+```
+
+```{r}
+class(tb)
+```
+
+When you print tb in the console directly, there are many differences between tibbles and data frame. It is printed more elegantly by ensuring to print out only 10 rows.
+
+Create tibble from scratch similar to data frame. If you give single value in column, it will automatically extend it to complete the column according to the length of the longest column
+
+```{r}
+tibble(x = 1:5,
+       y = 1,
+       z = x^2 + y)
+```
+
+This cannot be done in a data frame because x is not defined, while in Tibble it can be done simultaneously. In data frame we first need to create the data frame, then add column z based on x and y
+
+```{r}
+data.frame(x = 1:5,
+           y = rep(1,5),
+           z = x^2 + y)
+```
+
+```{r}
+df <- data.frame(x = 1:5,
+                 y = rep(1,5))
+cbind(df, df$x^2 + df$y)
+```
+
+Tibble allows you to name the columns the way you want. Use backtick near 1. In data frame they are replaced by dummy variables. It is very useful when importing data that contains spaces within them or contain weird names.
+
+```{r}
+tibble(`:)` = "smile",
+       ` ` = "space",
+       `2000` = "number"
+       )
+```
+
+Another way of defining tibbles is tribble function. Very useful when developing code when you wanna create a test dataset to test your code quikly
+
+```{r}
+tribble(~x, ~y, ~z,
+        #--/---/---
+        "a", 2, 3.6, 
+        "b", 1, 8.5)
+```
+
+Another advantage of tibble is the printing function and allows you to adjust certain parameters. Lubridate belongs to tidyverse and makes dealing with dates and times very easy. now gives the current date and time at the instance the function was called. If you dont wanna load the whole package, you can use :: to refer to that function only without loading the package.
+
+```{r}
+tb2 <- tibble(a = lubridate::now() + runif(1e3)*86400,
+       b = lubridate::today() + runif(1e3)*30,
+       c = 1:1e3,
+       d = runif(1e3),
+       e = sample(letters, 1e3, replace = TRUE))
+tb2
+```
+
+```{r}
+sample(c(1,2,3), 4, replace = TRUE)
+```
+
+```{r}
+print(tb2)
+```
+
+Width controlls the width in console
+```{r}
+print(tb2, 5, width = 5)
+```
+
+For width as large as possible, make it infinite
+```{r}
+print(tb2, 5, width = inf)
+```
+

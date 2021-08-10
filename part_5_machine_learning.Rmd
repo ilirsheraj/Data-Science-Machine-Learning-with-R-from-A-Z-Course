@@ -1,0 +1,347 @@
+---
+title: "Part 6 - Machine Learning"
+author: "Ilir_Sheraj"
+date: "7/23/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Most important packages in Data Preprocessing: **tidymodels**
+
+**{recipes}**
+
+**{rsample}**
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(skimr)
+```
+
+```{r}
+starwars
+View(starwars)
+```
+
+To get a glance of the data, use skim(), an awesome function to summarize the data.
+
+```{r}
+skim(starwars)
+```
+
+```{r}
+data <- starwars %>% 
+  select(height, mass, gender)
+data
+```
+
+Split the data into train and test groups
+
+```{r}
+library(rsample)
+data_split <- initial_split(data)
+data_train <- training(data_split)
+data_test <- testing(data_split)
+```
+
+Feature Engineering
+
+```{r}
+data_train <- data_train %>% 
+  mutate(BMI = mass / (height^2))
+data_train
+```
+
+```{r}
+skim(data_train)
+```
+
+```{r}
+any(is.na(data_train))
+```
+
+```{r}
+colSums(is.na(data_train))
+```
+
+Feature Engineering
+
+```{r}
+data_train_imp <- data_train %>% 
+  drop_na(height, gender) %>% 
+  mutate(mass = ifelse(is.na(mass), mean(mass, na.rm = TRUE), mass),
+         BMI = ifelse(is.na(BMI), mean(BMI, na.rm = TRUE), BMI))
+skim(data_train_imp)
+```
+
+Encoding Categorical Data
+
+```{r}
+skim(iris)
+```
+
+```{r}
+iris %>% 
+  mutate(Species_versicolor = ifelse(Species == "versicolor", 1, 0),
+         Species_virginica = ifelse(Species == "virginica", 1, 0)) %>% 
+  select(-Species)
+```
+
+Encode the gender variable
+
+```{r}
+skim(data_train_imp)
+```
+
+```{r}
+data_trin_imputed_encoded <- data_train_imp %>% 
+  mutate(gender_masculine = ifelse(gender == "masculine", 1, 0)) %>% 
+  select(-gender)
+data_trin_imputed_encoded
+```
+
+Lets scale
+
+```{r}
+normalize <- function(feature){
+  (feature - mean(feature)) / sd(feature)
+}
+```
+
+```{r}
+data_train_imputed_encoded_normalized <- data_trin_imputed_encoded %>% 
+  mutate_all(normalize)
+data_train_imputed_encoded_normalized
+```
+
+Complete pre-processing pipeline
+
+```{r}
+data_train_pipeline <- data_train %>% 
+  mutate(BMI = mass / (height^2)) %>% 
+  drop_na(height, gender) %>% 
+  mutate(mass = ifelse(is.na(mass), mean(mass, na.rm = TRUE), mass),
+         BMI = ifelse(is.na(BMI), mean(BMI, na.rm = TRUE), BMI)) %>% 
+  mutate(gender_masculine = ifelse(gender == "masculine", 1, 0)) %>% 
+  select(-gender) %>% 
+  mutate_all(normalize)
+data_train_pipeline
+```
+
+```{r}
+library(waldo)
+compare(data_train_imputed_encoded_normalized, data_train_pipeline)
+```
+
+Do the same using recipe package
+
+```{r}
+library(recipes)
+
+data_recipe <- data_train %>% 
+  recipe() %>% 
+  step_mutate(BMI = mass / (height^2)) %>% 
+  step_naomit(height, gender) %>% 
+  step_impute_mean(mass, BMI) %>% 
+  step_dummy(gender) %>% 
+  step_normalize(everything()) %>% 
+  prep()
+```
+
+To get the actual data
+
+```{r}
+data_preprocessed <- juice(data_recipe)
+data_preprocessed
+```
+
+```{r}
+compare(data_preprocessed, data_train_pipeline)
+```
+
+# Linear Regression
+
+The goal of a model is to provide a simple low-dimensional summary of a dataset. There are two parts of a model:
+
+1 - Define a family of models that express a precise, but geenral pattern that you wanna capture
+
+2 - Generate a fitted model by finding the model from the family that is the closest to your data
+
+A fitted model is just the closest model from a family of models, but it does not imply it is a good model. The goal of a model is not to uncover the truth, but to discover a simple approximation that is still useful
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(tibble)
+
+sim1 <- modelr::sim1
+sim1
+```
+
+```{r}
+ggplot(sim1, aes(x, y)) + 
+  geom_point()
+```
+
+Let's create a family of models
+
+```{r}
+ggplot(sim1, aes(x, y)) +
+  geom_point() +
+  geom_abline(aes(intercept = 20, slope = -2))
+```
+
+Generate random lines with different intercpets and slopes and decide which is the best fit for the  the data points. This is called a **family of models**.
+
+```{r}
+models <- tibble(
+  a1 = runif(250, -20, 40),
+  a2 = runif(250, -5, 5)
+)
+models
+ggplot(sim1, aes(x, y)) +
+  geom_point() +
+  geom_abline(aes(intercept = a1, slope = a2), data = models, alpha = 1/4)
+```
+
+Create a function
+
+```{r}
+model1 <- function(a, data){
+  a[1] + data$x*a[2]
+}
+model1(c(7, 1.5),sim1)
+```
+
+Root mean square deviation function 
+
+```{r}
+measure_distance <- function(mod, data){
+  diff <- data$y - model1(mod, data)
+  sqrt(mean(diff^2))
+}
+measure_distance(c(7, 1.5), sim1)
+```
+
+Distance for all models
+
+```{r}
+sim1_dist <- function(a1, a2){
+  measure_distance(c(a1, a2), sim1)
+}
+
+library(purrr)
+models <- models %>% 
+  mutate(dist = purrr::map2_dbl(a1, a2, sim1_dist))
+```
+
+Pick the best 10 models within ggplot.
+
+```{r}
+ggplot(sim1, aes(x, y)) +
+  geom_point() +
+  geom_abline(
+    aes(intercept = a1, slope = a2, color = -dist),
+    data = filter(models, rank(dist) <= 10)
+  )
+```
+
+Find the parameters of the top 10 models
+
+```{r}
+ggplot(models, aes(a1, a2)) +
+  geom_point(data = filter(models, rank(dist) <= 10), size = 4, color = "red") +
+  geom_point(aes(color = -dist))
+```
+
+This allows us to narrow down the search space
+
+```{r}
+grid <- expand.grid(
+  a1 = seq(-5, 20, length = 25),
+  a2 = seq(1,3, length = 25)
+) %>% 
+  mutate(dist = purrr::map2_dbl(a1, a2, sim1_dist))
+grid
+```
+
+```{r}
+grid %>% 
+  ggplot(aes(a1, a2)) + 
+  geom_point(data = filter(grid, rank(dist) <= 10), size = 4, color = "red") +
+  geom_point(aes(color = -dist))
+```
+
+```{r}
+ggplot(sim1, aes(x,y)) +
+  geom_point(size = 2, color = "grey30") +
+  geom_abline(
+    aes(intercept = a1, slope = a2, color = -dist),
+    data = filter(grid, rank(dist) <= 10)
+  )
+```
+
+Best Model
+
+```{r}
+best <- optim(c(0,0), measure_distance, data = sim1)
+best
+```
+
+```{r}
+ggplot(sim1, aes(x,y)) +
+  geom_point(size = 2, color = "grey30") +
+  geom_abline(intercept = best$par[1], slope = best$par[2])
+```
+
+Do the same in base R
+
+```{r}
+sim1_mod <- lm(y~x, data = sim1)
+summary(sim1_mod)
+```
+
+```{r}
+broom::tidy(sim1_mod)
+```
+
+Lets do some prediction
+
+```{r}
+library(rsample)
+data_split <- initial_split(sim1)
+data_train <- training(data_split)
+data_test <- testing(data_split)
+```
+
+```{r}
+model1 <- lm(y~x, data = data_train)
+summary(model1)
+```
+
+```{r}
+prediction <- predict(model1, data_test)
+prediction
+```
+
+```{r}
+data_test <- data_test %>% 
+  mutate(pred = prediction)
+data_test
+```
+
+```{r}
+ggplot(data_test) +
+  geom_line(aes(x, pred), size = 3, color = "red", lpha = 0.5) +
+  geom_point(aes(x, y), size = 5, color = "green", alpha = 3/4) +
+  geom_point(data= sim1, aes(x,y), alpha = 0.5)
+```
+
+```{r}
+library(yardstick)
+yardstick::metrics(data_test, y, pred)
+```
+

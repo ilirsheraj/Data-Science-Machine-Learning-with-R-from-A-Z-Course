@@ -1,0 +1,212 @@
+---
+title: "Part 7 - Linear Regression Model"
+author: "Ilir_Sheraj"
+date: "7/25/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Tidymodels steps**
+
+1 - Split data {rsample}
+
+2 - Prepare recipe {recipes}
+
+3 - Specify Model {parsnip}
+
+4 - Tune Hyperparameters {tune}
+
+5 - Fit Model {parsnip}
+
+6 - Analyze Model {broom}
+
+7 - Predict {parsnip}
+
+8 - Interpret Results {yardstick}
+
+# Train a Linear Regression Model
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(corrr)
+library(rsample)
+library(recipes)
+library(parsnip)
+```
+
+```{r}
+diamonds
+```
+
+To select only numerical variables 
+```{r}
+diamonds %>% 
+  select(where(~!is.factor(.x))) %>% 
+  corrr::correlate() %>% 
+  corrr::fashion()
+```
+
+```{r}
+diamonds %>% 
+  select(where(~!is.factor(.x))) %>% 
+  corrr::correlate() %>% 
+  corrr::network_plot(min_cor = 0.1)
+```
+
+Select by correlation
+
+```{r}
+diamonds %>% 
+  select(where(~!is.factor(.x))) %>% 
+  correlate() %>% 
+  focus(price) %>% 
+  fashion()
+```
+
+Automate the pipeline so that if any other numerical variable is added to the data, it will be automatically pulled
+
+```{r}
+diamonds %>% 
+  select(where(~!is.factor(.x))) %>% 
+  correlate() %>% 
+  focus(price) %>% 
+  arrange(desc(price)) %>% 
+  filter(price > 0.5) %>% 
+  pull(term)
+```
+
+```{r}
+highly_corr_variables <- diamonds %>% 
+  select(where(~!is.factor(.x))) %>% 
+  correlate() %>% 
+  focus(price) %>% 
+  arrange(desc(price)) %>% 
+  filter(price > 0.5) %>% 
+  pull(term)
+highly_corr_variables
+```
+
+## Build a Linear Model with all the data
+
+```{r}
+data_all_split <- initial_split(diamonds, strata = price)
+data_all_train <- training(data_all_split)
+data_all_test <- testing(data_all_split)
+```
+
+
+```{r}
+model_all <- lm(price ~ ., data = diamonds)
+summary(model_all)
+```
+
+```{r}
+broom::tidy(model_all) %>% 
+  arrange(p.value)
+```
+
+## Select only numerical values
+
+```{r}
+data <- diamonds %>% 
+  select(all_of(highly_corr_variables), price)
+data
+```
+
+Default is 75% to 25%
+
+```{r}
+data_split <- initial_split(data, strata = price)
+data_train <- training(data_split)
+data_test <- testing(data_split)
+```
+
+```{r}
+model <- lm(price ~ ., data = data_train)
+```
+
+```{r}
+summary(model)
+```
+
+```{r}
+broom::tidy(model)
+```
+
+## Tidy Models Data
+
+```{r}
+data_tidy_split <- initial_split(diamonds, strata = price)
+data_tidy_train <- training(data_tidy_split)
+data_tidy_test <- testing(data_tidy_split)
+```
+
+### Preprocessing
+
+```{r}
+data_rec <- data_tidy_train %>% 
+  recipe(price ~., data_tidy_train) %>% 
+  step_dummy(all_nominal()) %>% 
+  step_normalize(all_numeric(), - all_outcomes()) %>% 
+  prep()
+
+juiced <- juice(data_rec)
+```
+
+```{r}
+lm_model <- parsnip::linear_reg() %>% 
+  set_engine("lm") %>% 
+  set_mode("regression")
+```
+
+```{r}
+lm_fit <- fit(lm_model, price ~ ., data = juiced)
+lm_fit
+```
+
+```{r}
+glance(lm_fit)
+```
+
+```{r}
+tidy(lm_fit)
+```
+
+
+```{r}
+results_train <- lm_fit %>% 
+  predict(new_data = juiced) %>% 
+  mutate(truth = data_tidy_train$price)
+```
+
+```{r}
+results_test <- lm_fit %>% 
+  predict(new_data = bake(data_rec, data_tidy_test)) %>% 
+  mutate(truth = data_tidy_test$price)
+```
+
+```{r}
+results <- results_train %>% 
+  mutate(type = "train") %>% 
+  bind_rows(
+    results_test %>% 
+      mutate(type = "test")
+  )
+```
+
+```{r}
+results %>% group_by(type) %>% 
+  yardstick::rmse(truth, .pred)
+```
+
+```{r}
+ggplot(results, aes(truth, .pred)) +
+  geom_point() +
+  geom_abline(color = "red", size = 2) +
+  coord_fixed()
+```
+

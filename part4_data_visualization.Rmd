@@ -1,0 +1,318 @@
+---
+title: "part 4 data visualization"
+author: "Ilir_Sheraj"
+date: "7/18/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Getting Started
+
+```{r}
+library(ggplot2)
+library(dplyr)
+mpg
+```
+
+```{r}
+dplyr::glimpse(mpg)
+```
+
+```{r}
+str(mpg)
+```
+
+```{r}
+summary(mpg)
+```
+
+To summarize the dataset even better use skimr. This is the coolest summary i've ever seen
+
+```{r}
+library(skimr)
+skim(mpg)
+```
+
+```{r}
+mpg %>% select(displ, hwy)
+```
+
+```{r}
+# We haven't specified the type of plot we want
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) 
+```
+
+```{r}
+# specify the plot as scatterplot
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
+  geom_point()
+```
+
+# Aesthetic Mapping
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy)) +
+  geom_point()
+```
+
+ color, size, alpha, shape etc can be added as aesthetic created by aes()
+ 
+```{r}
+# color spectra
+ggplot(mpg, aes(x = displ, y = hwy, color = class)) +
+  geom_point()
+```
+ 
+```{r}
+p <- ggplot(mpg, aes(x = displ, y = hwy, color = class))
+p + geom_point()
+```
+
+```{r}
+# Not that suitable
+ggplot(mpg, aes(x = displ, y = hwy, size = class)) +
+  geom_point()
+```
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, alpha = cty)) +
+  geom_point()
+```
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, shape = class)) +
+  geom_point()
+```
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy)) +
+  geom_point(color = "blue")
+```
+
+```{r}
+# Do the same thing inside geom_point()
+ggplot(mpg) +
+  geom_point(aes(x = displ, y = hwy), color = "blue")
+```
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy)) +
+  geom_point(color = "blue", size = 3, alpha = 0.5, shape = 8)
+```
+
+# Single Variable Plots
+
+```{r}
+ggplot(mpg) +
+  geom_histogram(aes(x = displ), bins = 50)
+ggplot(mpg) +
+  geom_histogram(aes(x = displ), bins = 30)
+ggplot(mpg) +
+  geom_histogram(aes(x = displ), bins = 10)
+```
+
+```{r}
+# use binwidth as well
+ggplot(mpg) +
+  geom_histogram(aes(x = displ), binwidth = 0.4)
+```
+
+```{r}
+ggplot(mpg) + geom_freqpoly(aes(displ), bins = 10)
+```
+
+```{r}
+# Smoothed-out histogram
+ggplot(mpg) + geom_density(aes(displ))
+```
+
+```{r}
+ggplot(mpg) + geom_bar(aes(cyl))
+```
+
+```{r}
+ggplot(mpg) + geom_bar(aes(drv))
+```
+
+```{r}
+ggplot(mpg) + geom_bar(aes(class))
+```
+
+```{r}
+# Use factors for ordering
+mpg$class %>% 
+  factor(levels = c("suv", "compact", "midsize", "subcompact", "pickup", "minivan", "2seater"))
+```
+
+```{r}
+# Order them from the most frequent to the least
+ggplot(mpg) + geom_bar(aes(forcats::fct_infreq(class)))
+```
+
+```{r}
+ggplot(mpg) + geom_bar(aes(forcats::fct_infreq(class), fill = class))
+```
+
+```{r}
+ggplot(mpg) + geom_bar(aes(forcats::fct_infreq(class), color = class))
+```
+
+```{r}
+ggplot(mpg) + geom_bar(aes(forcats::fct_infreq(class)), fill = "blue")
+```
+
+```{r}
+ggplot(mpg) + geom_bar(aes(forcats::fct_infreq(class), fill = drv))
+```
+
+```{r}
+ggplot(mpg) + geom_bar(aes(forcats::fct_infreq(class), fill = drv), position = "dodge")
+```
+
+```{r}
+# Normalize
+ggplot(mpg) + geom_bar(aes(forcats::fct_infreq(class), fill = drv), position = "fill")
+```
+
+# Two-Variable Plots
+
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point()
+```
+
+```{r}
+ggplot(mpg, aes(class, displ)) +
+  geom_boxplot()
+```
+
+```{r}
+# violin combines density plot with a boxplot
+ggplot(mpg, aes(class, displ)) +
+  geom_violin()
+```
+
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point()
+ggplot(mpg, aes(displ, hwy)) +
+  geom_smooth()
+```
+
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_smooth(se = FALSE)
+```
+
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_smooth(color = "red", linetype = 2, size = 2)
+```
+
+```{r}
+mpg_class_disp <- mpg %>% group_by(class) %>% 
+  summarize(mean_disp = mean(displ))
+ggplot(mpg_class_disp, aes(class, mean_disp)) +
+  geom_col()
+```
+
+```{r}
+ggplot(mpg) + geom_density2d(aes(displ, hwy))
+```
+
+```{r}
+ggplot(mpg) + geom_bin2d(aes(displ, hwy))
+```
+
+Check the R Grpah gallery for all kinds of R plots available
+
+# Facets, Layering and Coordinate Systems
+
+```{r}
+# Add smoothing on top of it
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point() + geom_smooth(color = "red")
+```
+
+```{r}
+p <- ggplot(mpg, aes(displ, hwy)) +
+  geom_point()
+p + geom_smooth(ce = FALSE, color = "red")
+```
+
+```{r}
+p + geom_density_2d() +
+  geom_rug()
+```
+
+```{r}
+mpg %>% filter(class == "2seater") %>% 
+  ggplot() + geom_point(aes(displ, hwy))
+```
+
+```{r}
+ggplot(mpg) + geom_point(aes(displ, hwy)) +
+  facet_wrap(~class, nrow = 1)
+```
+
+```{r}
+ggplot(mpg, aes(class, hwy)) + 
+  geom_boxplot(aes(color = class), show.legend = FALSE) +
+  coord_flip()
+```
+
+# Styling and Saving
+
+```{r}
+plot <- ggplot(mpg) +
+  geom_point(aes(displ, hwy))
+plot + labs(
+  title = "Our Plot",
+  subtitle = "Subtitle Here",
+  caption = "...and caption",
+  x = "Engine Size (in liters)",
+  y = "Fuel Efficicency (on the highway)"
+)
+```
+
+```{r}
+plot + 
+  xlab("The x-axis") +
+  ylab("The y-axis") +
+  ggtitle("Plot Title") +
+  theme_bw()
+```
+
+```{r}
+p <- plot + 
+  facet_wrap(~class, nrow = 1) +
+  xlab("The x-axis") +
+  ylab("The y-axis") +
+  ggtitle("Plot Title") +
+  theme_bw()
+p
+```
+
+```{r}
+ggsave("plot.pdf", p)
+```
+
+```{r}
+ggsave("plot.png", p)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+

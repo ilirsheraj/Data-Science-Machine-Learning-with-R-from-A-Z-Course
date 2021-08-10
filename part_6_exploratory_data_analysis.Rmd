@@ -1,0 +1,274 @@
+---
+title: "Part 6 - EDA"
+author: "Ilir_Sheraj"
+date: "7/25/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggplot2)
+library(tibble)
+library(dplyr)
+```
+
+```{r}
+diamonds
+```
+
+```{r}
+glimpse(diamonds)
+```
+
+```{r}
+summary(diamonds)
+```
+
+There is not a single NA value in hte dataset
+
+```{r}
+str(diamonds)
+```
+
+```{r}
+dim(diamonds)
+```
+
+```{r}
+skimr::skim(diamonds)
+```
+
+```{r}
+head(diamonds)
+```
+
+```{r}
+tail(diamonds)
+```
+
+## Lets Visualize the Distributions
+### Categorical Variables
+
+```{r}
+ggplot(diamonds, aes(cut)) +
+  geom_bar()
+```
+
+```{r}
+diamonds %>% count(cut)
+```
+
+```{r}
+table(diamonds$cut)
+```
+
+```{r}
+unique(diamonds$cut)
+```
+
+```{r}
+levels(diamonds$cut)
+```
+
+```{r}
+levels(diamonds$clarity)
+```
+
+```{r}
+table(diamonds$clarity, diamonds$cut)
+```
+
+Do the same but order
+
+```{r}
+diamonds %>% 
+  count(cut, clarity) %>% 
+  arrange(n)
+```
+
+```{r}
+diamonds %>% 
+  count(cut, clarity) %>% 
+  arrange(desc(n))
+```
+
+```{r}
+ggplot(diamonds, aes(x = cut, fill = clarity)) +
+  geom_bar(position = "dodge") +
+  theme(axis.text.x = element_text(angle = 45))
+```
+
+```{r}
+ggplot(diamonds, aes(x = cut, fill = clarity)) +
+  geom_bar(position = "dodge") +
+  coord_flip()
+```
+
+```{r}
+ggplot(diamonds, aes(x = cut, fill = clarity)) +
+  geom_bar(position = "fill") +
+  ylab("Proportion")
+```
+
+```{r}
+table(diamonds$cut, diamonds$clarity)
+```
+
+To calculate the percentages of each
+
+```{r}
+prop.table(table(diamonds$cut, diamonds$clarity))
+```
+
+```{r}
+prop.table(table(diamonds$cut, diamonds$clarity)) %>% sum()
+```
+
+```{r}
+ggplot(diamonds, aes(x = cut)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 45)) +
+  facet_wrap(~clarity)
+```
+
+```{r}
+round(prop.table(table(diamonds$cut, diamonds$clarity))*100, 2)
+```
+
+## Working with Continous Variables
+
+```{r}
+ggplot(diamonds, aes(x = carat)) +
+  geom_histogram(binwidth = 0.5)
+```
+
+See the ranges with different intervals
+
+```{r}
+diamonds %>% 
+  count(cut_width(carat, 0.5))
+```
+
+```{r}
+smaller <- diamonds %>% 
+  filter(carat < 3)
+ggplot(smaller, aes(x = carat)) +
+  geom_histogram(binwidth = 0.1)
+```
+
+```{r}
+ggplot(smaller, aes(carat, color = cut)) +
+  geom_freqpoly(binwidth = 0.1)
+```
+
+```{r}
+ggplot(smaller, aes(carat)) +
+  geom_histogram(binwidth = 0.01)
+```
+
+```{r}
+ggplot(diamonds, aes(y)) +
+  geom_histogram(binwidth = 0.5) +
+  coord_cartesian(ylim = c(0,50))
+```
+
+Zero values are outliers and seem to be mistakes because its impossible to have diamonsw without dimensions
+
+```{r}
+diamonds %>% filter(y == 0)
+```
+
+```{r}
+diamonds %>% filter(y > 20)
+```
+
+```{r}
+# Outliers
+diamonds %>% 
+  filter(y < 3 | y > 20) %>% 
+  select(price, x, y, z) %>% 
+  arrange(y)
+```
+
+## Missing Values
+
+```{r}
+diamonds %>% 
+  filter(between(y, 3, 20)) %>% 
+  ggplot(aes(y)) + 
+  geom_histogram(binwidth = 0.5)
+```
+
+```{r}
+diamonds %>% 
+  mutate(y = ifelse(y < 3 | y > 20, NA, y)) %>% 
+  ggplot(aes(x, y)) +
+  geom_point()
+```
+
+```{r}
+diamonds %>% 
+  ggplot(aes(x, y)) +
+  geom_point()
+```
+
+## Covariation
+### Categorical vs Continuous
+
+```{r}
+diamonds %>% 
+  ggplot(aes(price)) +
+  geom_freqpoly(aes(color = cut), binwidth = 500)
+```
+
+```{r}
+diamonds %>% 
+  ggplot(aes(cut)) +
+  geom_bar()
+```
+
+### Density Plot
+
+```{r}
+diamonds %>% 
+  ggplot(aes(price, y = ..density..)) +
+  geom_freqpoly(aes(color = cut, binwidth = 500))
+```
+
+```{r}
+diamonds %>% 
+  ggplot(aes(cut, price)) +
+  geom_boxplot() +
+  coord_flip()
+```
+
+## Categorical vs Categorical
+
+```{r}
+diamonds %>% 
+  ggplot(aes(cut, color)) +
+  geom_count()
+```
+
+```{r}
+diamonds %>% 
+  count(color, cut) %>% 
+  ggplot(aes(color, cut)) +
+  geom_tile(aes(fill = n))
+```
+
+```{r}
+diamonds %>% 
+  ggplot() +
+  geom_point(aes(x = carat, y = price), alpha = 1/100)
+```
+
+```{r}
+smaller %>% 
+  ggplot() +
+  geom_bin2d(aes(carat, price))
+```
+

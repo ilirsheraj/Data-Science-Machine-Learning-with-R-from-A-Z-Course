@@ -1,0 +1,75 @@
+---
+title: "Markdown Exercises"
+author: "Ilir_Sheraj"
+date: "7/19/2021"
+output: html_document
+params:
+  species: "setosa"
+---
+
+```{r setup, include=FALSE}
+library(ggplot2)
+library(dplyr)
+```
+
+```{r, include=FALSE}
+data <- iris %>% 
+  select(Species, starts_with("Petal"))
+```
+
+We have data about `r nrow(iris)` iris plants
+
+Here is a scatter plot of petal width and petal length
+
+```{r plot, echo = FALSE}
+data %>% 
+  ggplot(aes(Petal.Width, Petal.Length)) +
+  geom_point() +
+  ggtitle("This is My Plot")
+```
+
+To get the same output as knitting, write rmarkdown::render("part5_markdown.Rmd")
+
+This is *Italic*, so is _this_
+
+This is **bold**, so is **this**
+
+`This is code formatted`
+
+# Header 1
+
+## Header 2
+
+### Header 3
+
+<http://google.com>
+
+[Google](http://google.com)
+
+![My plot](plot.png)
+
+column one | column two
+-----------|-----------
+cell 1     | cell 2
+cell 3     | cell 4
+
+# Dynamically Generate Plots
+
+```{r}
+species <- params$species
+data <- iris %>% 
+  filter(Species == species) %>% 
+  select(Species, starts_with("Petal"))
+```
+
+```{r}
+data %>% 
+  ggplot(aes(Petal.Width, Petal.Length)) +
+  geom_point() +
+  ggtitle("This is My Plot")
+```
+
+Go to the counsel and add param sections such that 
+
+rmarkdown::render("part5_markdown.Rmd", params = list(species = "versicolor"))
+

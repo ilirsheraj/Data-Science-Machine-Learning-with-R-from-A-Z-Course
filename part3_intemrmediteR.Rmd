@@ -1,0 +1,677 @@
+---
+title: "Part 3 - Intermediate R"
+output:
+  html_document:
+    df_print: paged
+---
+
+# Important Functions Related to Packages
+
+install.packages()
+
+installed.packages()
+
+remove.packages()
+
+old.packages(): outdated packages
+
+update.packages()
+
+library()/detach()
+
+Vignettes: Long-form documentation, like a book chapter which shows the reader how to solve a problem. It is accessed by browseVignettes() or vignette()
+
+# Factors
+
+Used to handle categorical variables. The data object is used to categorize data and store it a slevels. They can store both strings and integers and are very important for data analysis and statistical learning.
+
+forcats package from tidyverse provides many tools to deal with factors
+
+fct_reorder(): reordering a factor by another variable
+
+fct_infreq(): reordering a factor by frequency of values
+
+fct_relevel(): changing the order of a factor by hand
+
+fct_lump(): collapse least/most frequent values of factor
+
+# Dates and Time
+
+It is a difficult topic not just in R but all languages
+
+lubridate() makes it easier to create a date/time
+
+Three ways to create a date/time
+
+From a string
+
+from individual date-time components
+
+From an existing date/time object
+
+# The Apply family
+
+apply()/lapply()/sapply()/mapply()/vapply()
+
+The most important is lapply()
+
+Apply a given function to every element of a list and obtains a list as a result
+
+use unlist() to convert any list into a normal flat vector
+
+# Importin/Exporting Data
+
+Tidyverse fir the win
+
+readr: reads rectangular data (.csv. tsv. fwf)
+
+read_csv()
+
+write_csv()
+
+readxl() for getting data out of excel and into R: read_xls()/read_xlsx()
+
+httr() for retrieving webpages
+
+# Relational Operators in R
+
+Operators that compare two terms
+
+```{r}
+v = c(2,5.5, 6, 9)
+t <- c(8, 2.5, 14, 9)
+```
+
+```{r}
+v > t
+```
+
+```{r}
+v < t
+```
+
+```{r}
+v >= t
+```
+
+```{r}
+v <= t
+```
+
+Find if there is at least one value that fullfills the condition
+
+```{r}
+sum(v == t)
+```
+
+```{r}
+sum(v == t) > 0
+```
+
+```{r}
+sum(v != t)
+```
+
+# Logical Operators
+
+## AND, OR, NOT
+
+```{r}
+TRUE & TRUE
+```
+
+```{r}
+TRUE & FALSE
+```
+
+```{r}
+TRUE | FALSE
+```
+
+```{r}
+v1 <- c(TRUE, TRUE, FALSE, FALSE)
+v2 <- c(TRUE, FALSE, TRUE, FALSE)
+```
+
+```{r}
+v1 & v2
+```
+
+```{r}
+v1 | v2
+```
+
+```{r}
+!v1
+```
+
+```{r}
+!v2
+```
+
+Coercing numbers into logicals
+
+```{r}
+v <- c(3,0, TRUE, 54534)
+t <- c(4, 0, FALSE, 3234)
+```
+
+```{r}
+v&t
+```
+
+```{r}
+v | t
+```
+
+```{r}
+!v
+```
+
+```{r}
+!t
+```
+
+# Conditional Statements
+## if/else statements
+
+```{r}
+if (TRUE) {
+  print("Hello, World!")
+}
+```
+
+```{r}
+var <- 10
+var > 10
+```
+
+```{r}
+if ( var > 10) {
+  print("Var is Greater than 10")
+}
+```
+
+```{r}
+if ( var <= 10) {
+  print("Var is Smaller than or Equal to 10")
+  }
+```
+
+```{r}
+if ( var > 10) {
+  print("Var is Greater than 10")
+} else {
+  print("Var is less than or equal to 10")
+}
+```
+
+```{r}
+var <- 11
+var2 <- "Hi"
+if ( var > 10 & var2 == "Hi"){
+  print("That works!")
+}
+```
+
+```{r}
+var = 3
+if (var > 10) {
+  print("Var is greater than 10")
+} else if (var == 10) {
+  print("Var is equal to 10")
+} else {
+  print("Var is smaller than 10")
+}
+print("Hello World!")
+```
+
+# Working With Loops
+
+```{r}
+v <- LETTERS[1:4]
+for (i in v) {
+  print(i)
+}
+```
+
+Do the same with lapply
+
+```{r}
+results <- lapply(v, print)
+unlist(results)
+```
+
+```{r}
+result <- sapply(v, print)
+unlist(result)
+```
+
+# Working With Functions
+
+```{r}
+seq(5, 15, by = 4)
+```
+
+```{r}
+sum(1:10)
+```
+
+Function without any argument
+
+```{r}
+func_x <- function() {
+  print("Hello World")
+}
+func_x()
+```
+
+```{r}
+f_square <- function() {
+  (1:10)^2
+}
+f_square()
+```
+
+Calling the function definition
+
+```{r}
+f_square
+```
+
+```{r}
+f_square <- function(a = 1:10) {
+  (a)^2
+}
+f_square()
+```
+
+```{r}
+f_square(10)
+```
+
+```{r}
+f_square(1:5)
+```
+
+# Packages Installment and Management
+
+```{r}
+# install.packages(c("skimr", "corrr"))
+library(skimr)
+library(corrr)
+```
+
+```{r}
+#installed.packages()
+```
+
+```{r}
+old.packages()
+```
+
+```{r}
+help(ggplot2)
+browseVignettes(package = "corrr")
+vignette("using-corrr")
+```
+
+# Working With Factors
+
+Lets start with a simple string vector
+
+```{r}
+data <- c("East", "West", "East", "North", "North", "East", 
+          "West", "West", "West", "East", "North", "West")
+is.factor(data)
+class(data)
+```
+
+```{r}
+unique(data)
+```
+
+factor() and as.factor() functions do the same thing
+
+```{r}
+data_factor <- factor(data)
+data_factor
+```
+
+```{r}
+levels(data_factor)
+```
+
+```{r}
+as.integer(data_factor)
+```
+
+Specify the order as you wish
+
+```{r}
+sort(data_factor)
+```
+
+```{r}
+data_factor_new <- factor(data_factor, levels = c("East", "West", "North"))
+data_factor_new
+```
+
+```{r}
+is.integer(data_factor) == is.integer(data_factor_new)
+```
+
+```{r}
+sort(data_factor_new)
+```
+
+```{r}
+data_factor_complete <- factor(data_factor_new, levels = c("North", "East", "South", "West"))
+data_factor_complete
+```
+
+```{r}
+as.integer(data_factor_complete)
+```
+
+```{r}
+table(data_factor_complete)
+```
+
+```{r}
+table(data_factor)
+```
+
+```{r}
+sort(data_factor_complete)
+```
+
+```{r}
+data_factor_new_2 <- factor(data_factor_complete, levels = c("West", "East", "North", "South"))
+table(data_factor_new_2)
+```
+
+
+```{r}
+library(forcats)
+fct_infreq(data_factor_complete)
+```
+
+```{r}
+fct_relevel(data_factor_complete, "North")
+```
+
+# Dates and Time
+
+We use lubridate package from tidyverse to deal with time and date
+
+```{r}
+library(lubridate)
+```
+
+```{r}
+today()
+```
+
+```{r}
+class(today())
+```
+
+```{r}
+now()
+```
+
+```{r}
+class(now())
+```
+
+Create a date from a string
+
+```{r}
+string <- "2017-01-01"
+date <- ymd(string)
+class(date)
+```
+
+```{r}
+mdy("01-02-2017")
+```
+
+```{r}
+mdy("January 31st, 2017")
+```
+
+```{r}
+date2 <- mdy("January 31st, 2017")
+class(date2)
+```
+
+```{r}
+dmy("31-Jan-2017")
+```
+
+Creating date object from numbers
+
+```{r}
+ymd(20170131)
+```
+
+```{r}
+date_time <- ymd_hms("2017-01-31 20:11:59")
+class(date_time)
+```
+
+```{r}
+ymd_hm("2017/01/31 20:11")
+```
+
+```{r}
+mdy_hm("01/31/2018 08:22")
+```
+
+# Functional Programming
+
+We wont cover everything as this is a huge topic, but will concentrate mostly on lapply()
+
+```{r}
+# The function below is the same as lapply()
+# lapply(c(10,10,10,10,10,10,10,10,10,10), runif)
+values <- lapply(rep(10, 10), runif)
+values
+```
+
+```{r}
+result <- runif(10)
+mean(result)
+```
+
+```{r}
+means <- lapply(values, mean)
+means
+```
+
+As lapply() always returns a list, lets flatten it into a vector of values
+
+```{r}
+unlist(means)
+```
+
+```{r}
+unlist(lapply(values, mean))
+```
+
+```{r}
+nchar("Hey")
+```
+
+```{r}
+nchar("Hello World")
+```
+
+```{r}
+car_names <- rownames(mtcars)
+unlist(lapply(car_names, nchar))
+```
+
+```{r}
+car_names_length <- unlist(lapply(car_names, nchar))
+car_names[4]
+car_names_length[4]
+```
+
+```{r}
+car_nm <- "Hornet 4 Drive"
+which(car_names == car_nm)
+```
+
+```{r}
+which(car_names == "Fiat X1-9")
+```
+
+```{r}
+which(rownames(mtcars) == "Hornet Sportabout")
+```
+
+```{r}
+which(colnames(mtcars) == "am")
+```
+
+```{r}
+mtcars[5,9]
+```
+
+```{r}
+random_function <- function(name) {
+  
+  if (mtcars[name,9] == 0) # if autotmatic (=0)
+    mtcars[name,1] 
+  else
+    mtcars[name,1]^2 # if manual (=0)
+}
+random_function("Hornet Sportabout")
+```
+
+```{r}
+unlist(lapply(rownames(mtcars), random_function))
+```
+
+```{r}
+unlist(lapply(rownames(mtcars), random_function <- function(name) {
+  
+  if (mtcars[name,9] == 0) # if autotmatic (=0)
+    mtcars[name,1] 
+  else
+    mtcars[name,1]^2 # if manual (=0)
+}))
+```
+
+# Data Import and Export
+
+Using tidyverse alternatives that have no discrepencies. We use readr. The main functions are read_csv() and write_csv()
+
+```{r}
+library(readr)
+read_csv("test.csv")
+```
+
+```{r}
+?read_csv
+```
+
+```{r}
+read_csv("test.csv", col_names = FALSE)
+```
+
+```{r}
+df <- read_csv("test.csv")
+df
+```
+
+```{r}
+iris
+```
+
+```{r}
+write_csv(iris, file = "iris.csv")
+```
+
+```{r}
+read_csv("iris.csv")
+```
+
+```{r}
+library(readxl)
+excel_import <- read_xlsx("test.xlsx")
+excel_import
+```
+
+read webpages
+
+```{r}
+library(httr)
+r <- GET("tidyverse.org")
+# httr::GET("tidyverse.org") #Same
+r$url
+```
+
+```{r}
+status_code(r)
+```
+
+```{r}
+content(r)
+```
+
+# Working With DataBases
+
+Relational Databases: SQL
+
+DBI package
+
+```{r}
+library(DBI)
+```
+
+```{r}
+con <- dbConnect(RSQLite::SQLite(), dbname = ":memory:")
+```
+
+```{r}
+dbListTables(con)
+```
+
+Create a table within SQL database
+
+```{r}
+dbWriteTable(con, "mtcars", mtcars)
+```
+
+```{r}
+dbListTables(con)
+```
+
+```{r}
+dbListFields(con, "mtcars")
+```
+
+```{r}
+table <- dbReadTable(con, "mtcars")
+table
+```
+
+```{r}
+res <- dbSendQuery(con, "SELECT * FROM mtcars WHERE cyl = 4")
+dbFetch(res)
+```
+
+Remove the results 
+
+```{r}
+dbClearResult(res)
+```
+
+Closing the connection whenever you need to
+
+```{r}
+dbDisconnect(con)
+```
